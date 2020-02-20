@@ -22,7 +22,8 @@ X.sc <- scale(X.raw) #scaled X/feature/input matrix.
 
 
 KFoldCV(X_mat, y_vec, ComputePredictions, fold_vec, k){
-    error_vec <-  weightVector <- rep(0, k)
+    error_vec <- rep(0, k)
+    
     for (folds in 1:k){
     is.test <- fold.vec == folds
     is.train <- !is.test
@@ -30,13 +31,13 @@ KFoldCV(X_mat, y_vec, ComputePredictions, fold_vec, k){
     y.new <- y.vec[is.test]
     X.train <- X.sc[is.train, ]
     y.train <- y.vec[is.train]
-    wrap_knn <- function(X_train,y_train,X_new)ComputePredictions(X_train,X_new,y_train)
+    pred_new <- ComputePredictions(X_train,X_new,y_train)
     zero.loss <- pred.new != y.new
     mean.err <- mean(zero.loss)    
     error_vec[folds] = mean.err
   }
 
-  return error_vec
+  return(error_vec)
 }
 
 
@@ -46,12 +47,15 @@ NearestNeighborsCV <- function(X_mat, y_vec, X_new, num_folds, max_neighbors){
     mean_error_vec <- c(1:max_neighbors)
     for (num_neighbors in 1:max_neighbors){
 	     #figure class::knn()
-         error_mat[, num_neighbors] = KFoldCV(X_mat, y_vec, class::knn(k = num_neighbors), validation_fold_vec, 5)
+         error_mat[, num_neighbors] = KFoldCV(X_mat, 
+                                              y_vec, 
+                                              function(X_mat, X_new, y_vec){class::knn(X_mat, X_new, y_vec, k=num_neighbors )}, 
+                                              validation_fold_vec)
          mean_error_vec[num_neighbors] <- colMeans(error_mat)
          best_neighbors <- which.min(mean_error_vec)
-		 #(5 points) Your function should output (1) the predictions for X_new, 
-		 #using the entire X_mat,y_vec with best_neighbors; (2) the mean_error_mat for 
-	     #visualizing the validation error.
     }
+    
+    #(5 points) Your function should output (1) the predictions for X_new, 
+    #using the entire X_mat,y_vec with best_neighbors; (2) the mean_error_mat for 
+    #visualizing the validation error.
 }
-
