@@ -20,6 +20,14 @@ X.raw <- as.matrix(spam.dt[, -ncol(spam.dt), with=FALSE])
 y.vec <- spam.dt[[ncol(spam.dt)]]
 X.sc <- scale(X.raw) #scaled X/feature/input matrix.
 
+n.folds <- 5
+max.neighbors <- 20
+X.new.test <- matrix(0, nrow(X.sc), ncol(X.sc))
+X.new.test <- apply(mm, c(1, 2), function(x) sample(c(0, 1), 1))
+
+test.list <- list()
+test.list <- NearestNeighborsCV(X.sc , y.vec , X.new.test ,n.folds , max.neighbors )
+
 
 KFoldCV <- function(X_mat, y_vec, ComputePredictions, fold_vec){
   k <- max(fold_vec)  
@@ -32,7 +40,7 @@ KFoldCV <- function(X_mat, y_vec, ComputePredictions, fold_vec){
     y.new <- y_vec[is.test]
     X.train <- X_mat[is.train, ]
     y.train <- y_vec[is.train]
-    pred_new <- ComputePredictions(X_train,X_new,y_train)
+    pred.new <- ComputePredictions(X.train,X.new,y.train)
     zero.loss <- pred.new != y.new
     mean.err <- mean(zero.loss)    
     error_vec[folds] = mean.err
@@ -52,9 +60,10 @@ NearestNeighborsCV <- function(X_mat, y_vec, X_new, num_folds, max_neighbors){
                                               y_vec, 
                                               function(X_mat, X_new, y_vec){class::knn(X_mat, X_new, y_vec, k=num_neighbors )}, 
                                               validation_fold_vec)
-         mean_error_vec[num_neighbors] <- colMeans(error_mat)
-         best_neighbors <- which.min(mean_error_vec)
     }
+    
+    mean_error_vec <- colMeans(error_mat)
+    best_neighbors <- which.min(mean_error_vec)
     
     #(5 points) Your function should output (1) the predictions for X_new, 
     #using the entire X_mat,y_vec with best_neighbors; (2) the mean_error_mat for 
