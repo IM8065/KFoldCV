@@ -79,8 +79,22 @@ NearestNeighborsCV <- function(X_mat, y_vec, X_new, num_folds, max_neighbors){
 
 
 
+ ## for loop to place a dt of perc err of neighbor by fold 
+error.dt.list <- list()
+
+for( fold in 1 : nrow(test.list$err_mat)){
+  error.dt.list[[fold]] <- data.table( error = test.list$err_mat[fold,] ,
+                                      neighbors = 1:ncol(test.list$err_mat),
+                                      folds = fold)
+}
+
+err.dt <- do.call( rbind , error.dt.list)
 
 
-
-
+ggplot()+
+  geom_line( aes( x = neighbors ,
+                  y = error ,
+                  color = folds, 
+                  group = folds),
+             data = err.dt)
 
