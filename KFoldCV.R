@@ -111,12 +111,8 @@ ggplot()+
               data = min.dt)
 
 
-sample(rep(1:4, nrow(X.sc)) )
 
 
-
-
-## accuracy precentage for all other two models
 
 
 
