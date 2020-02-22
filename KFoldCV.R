@@ -23,7 +23,7 @@ X.sc <- scale(X.raw) #scaled X/feature/input matrix.
 n.folds <- 5
 max.neighbors <- 20
 X.new.test <- matrix(0, nrow(X.sc), ncol(X.sc))
-X.new.test <- apply(mm, c(1, 2), function(x) sample(c(0, 1), 1))
+X.new.test <- apply(X.new.test, c(1, 2), function(x) sample(c(0, 1), 1))
 
 test.list <- list()
 test.list <- NearestNeighborsCV(X.sc , y.vec , X.new.test ,n.folds , max.neighbors )
@@ -34,7 +34,7 @@ KFoldCV <- function(X_mat, y_vec, ComputePredictions, fold_vec){
   error_vec <- rep(0, k)
     
     for (folds in 1:k){
-    is.test <- fold.vec == folds
+    is.test <- fold_vec == folds
     is.train <- !is.test
     X.new <- X_mat[is.test, ]
     y.new <- y_vec[is.test]
@@ -51,6 +51,7 @@ KFoldCV <- function(X_mat, y_vec, ComputePredictions, fold_vec){
 
 
 NearestNeighborsCV <- function(X_mat, y_vec, X_new, num_folds, max_neighbors){
+    set.seed(10)
     validation_fold_vec <- sample(rep(1:num_folds, l = nrow(X_mat)))
     error_mat = matrix(0, num_folds, max_neighbors)
     mean_error_vec <- c(1:max_neighbors)
@@ -65,9 +66,6 @@ NearestNeighborsCV <- function(X_mat, y_vec, X_new, num_folds, max_neighbors){
     mean_error_vec <- colMeans(error_mat)
     best_neighbors <- which.min(mean_error_vec)
     
-    #(5 points) Your function should output (1) the predictions for X_new, 
-    #using the entire X_mat,y_vec with best_neighbors; (2) the mean_error_mat for 
-    #visualizing the validation error.
     metric.list <- list()
     metric.list$min.pred.vec <- class::knn(X_mat , X_new ,y_vec , k= best_neighbors)
     metric.list$mean_err_vec_val <- mean_error_vec
@@ -81,7 +79,6 @@ NearestNeighborsCV <- function(X_mat, y_vec, X_new, num_folds, max_neighbors){
 
  ## for loop to place a dt of perc err of neighbor by fold 
 error.dt.list <- list()
-
 for( fold in 1 : nrow(test.list$err_mat)){
   error.dt.list[[fold]] <- data.table( error = test.list$err_mat[fold,] ,
                                       neighbors = 1:ncol(test.list$err_mat),
@@ -90,11 +87,36 @@ for( fold in 1 : nrow(test.list$err_mat)){
 
 err.dt <- do.call( rbind , error.dt.list)
 
+## data frame for mean error of folds by num of neighbors
+mean.err.dt <- data.table(  mean_error = as.numeric(test.list$mean_err_vec_val),
+                            neighbors = 1:length(test.list$mean_err_vec_val)) 
+
+min.dt <- mean.err.dt[ which.min(mean_error)]
 
 ggplot()+
   geom_line( aes( x = neighbors ,
                   y = error ,
                   color = folds, 
                   group = folds),
-             data = err.dt)
+             data = err.dt) +
+  geom_line( aes( x = neighbors ,
+                  y = mean_error ),
+                  color = "red"  , 
+                  data = mean.err.dt ,
+                  size=  2) +
+  geom_point( aes( x= neighbors ,
+                   y= mean_error) ,
+              color = "black",
+              size = 1.5 ,
+              data = min.dt)
+
+
+sample(rep(1:4, nrow(X.sc)) )
+
+
+
+
+## accuracy precentage for all other two models
+
+
 
