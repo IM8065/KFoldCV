@@ -111,6 +111,15 @@ ggplot()+
               data = min.dt)
 
 
+## test_fold_vec  - one element for each observations and elemnts are integers 1 -4
+test_fold_vec <- matrix( sample(rep(1:4, nrow(X.sc)) ,nrow(X.sc) ))
+X.sc <- cbind( X.sc , test_fold_vec)
+y.vec <- cbind( y.vec , test_fold_vec)
+
+colnames(y.vec) <- c("class" , "fold")
+colnames(X.sc)[ncol(X.sc)] <- "fold"
+
+
 
 
 
